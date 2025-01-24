@@ -14,14 +14,16 @@
 		}
         .info {
             padding: 6px 8px;
-            font: 14px/16px Arial, Helvetica, sans-serif;
-            background-color:#f8f8f8 !important;
+            font: 14px/16px Roboto, Arial, Helvetica, sans-serif;
+            /*background-color:#f8f8f8 !important;*/
             color: #444444 !important;
-            box-shadow: 0 0 15px rgba(0,0,0,0.2);
-            border-radius: 5px;
+            /*box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border-radius: 5px;*/
         }
         .info h2 {
             margin: 0 0 5px;
+            font-size:38px;
+            font-size:38px;
         }
         .leaflet-container {
             background: #fff;
@@ -46,6 +48,11 @@
         }
         .leaflet-popup-content td {
             min-width: 75px;
+        }
+        .leaflet-popup-content tr:first-of-type td {
+            font-size:18px;
+            font-weight:700;
+            color:#0076c0;
         }
         .leaflet-popup-content td img {
             max-height: 60vh;
@@ -94,6 +101,9 @@
         }
         .leaflet-control {
             box-shadow: 0 3px 14px rgba(0, 0, 0, 0.4)!important;
+        }
+        .info.leaflet-control {
+            box-shadow: none !important;
         }
         .leaflet-touch .leaflet-control-layers,
         .leaflet-touch .leaflet-bar,
@@ -187,4 +197,11 @@
         }
         .leaflet-popup-pane {
             z-index: 700;
+        }
+        #abstract {
+            background-color:transparent!important;
+            box-shadow:none !important;
+            font-style: italic;
+            font-size:10px;
+            font-family:'Roboto Condensed',Roboto, Arial, Helvetica, sans-serif;
         }
