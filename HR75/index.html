@@ -34,7 +34,7 @@
         <script src="js/labelgun.min.js"></script>
         <script src="js/labels.js"></script>
         <script src="data/Pledgesallcountries_0.js"></script>
-        <script src="data/PledgesPledgecountriesv2pledgespledgecountries_1.js"></script>
+        <script src="data/PledgesPledgecountriesv3_1.js"></script>
         <script src="data/country_lines_2.js"></script>
         <script>
         var highlightLayer;
@@ -54,7 +54,7 @@
         }
         var map = L.map('map', {
             zoomControl:false, maxZoom:10, minZoom:1
-        }).fitBounds([[-56.76444200864841,-172.91030829550127],[78.7345227694871,179.10984000506954]]);
+        }).fitBounds([[-63.601928466933344,-174.9998927500002],[69.17404201967155,177.886503973684]]);
         var hash = new L.Hash(map);
         map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
         var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
@@ -116,7 +116,6 @@
         }).addTo(map);
         var bounds_group = new L.featureGroup([]);
         function setBounds() {
-            
         }
         function pop_Pledgesallcountries_0(feature, layer) {
             layer.on({
@@ -172,6 +171,12 @@
                     <tr>\
                         <td colspan="2">' + (feature.properties['Pledges_2024 REPORT'] !== null ? autolinker.link(feature.properties['Pledges_2024 REPORT'].toLocaleString()) : '') + '</td>\
                     </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Rev_COUNTRY'] !== null ? autolinker.link(feature.properties['Rev_COUNTRY'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Rev_IMPLEMENTED'] !== null ? autolinker.link(feature.properties['Rev_IMPLEMENTED'].toLocaleString()) : '') + '</td>\
+                    </tr>\
                 </table>';
             var content = removeEmptyRowsFromPopupContent(popupContent, feature);
 			layer.on('popupopen', function(e) {
@@ -204,7 +209,7 @@
         });
         bounds_group.addLayer(layer_Pledgesallcountries_0);
         map.addLayer(layer_Pledgesallcountries_0);
-        function pop_PledgesPledgecountriesv2pledgespledgecountries_1(feature, layer) {
+        function pop_PledgesPledgecountriesv3_1(feature, layer) {
             layer.on({
                 mouseout: function(e) {
                     for (var i in e.target._eventParents) {
@@ -220,13 +225,7 @@
                         <td colspan="2">' + (feature.properties['Pledges_COUNTRY'] !== null ? autolinker.link(feature.properties['Pledges_COUNTRY'].toLocaleString()) : '') + '</td>\
                     </tr>\
                     <tr>\
-                        <td colspan="2">' + (feature.properties['Pledges_PLEDGE INFO'] !== null ? autolinker.link(feature.properties['Pledges_PLEDGE INFO'].toLocaleString()) : '') + '</td>\
-                    </tr>\
-                    <tr>\
-                        <td class="visible-with-data" id="PLEDGE"colspan="2"><strong>PLEDGE</strong><br />' + (feature.properties['PLEDGE'] !== null ? autolinker.link(feature.properties['PLEDGE'].toLocaleString()) : '') + '</td>\
-                    </tr>\
-                    <tr>\
-                        <td class="visible-with-data" id="IMPLEMENTED"colspan="2"><strong>IMPLEMENTED</strong><br />' + (feature.properties['IMPLEMENTED'] !== null ? autolinker.link(feature.properties['IMPLEMENTED'].toLocaleString()) : '') + '</td>\
+                        <td class="visible-with-data" id="Pledges Implemented"colspan="2"><strong>Pledges Implemented</strong><br />' + (feature.properties['Pledges Implemented'] !== null ? autolinker.link(feature.properties['Pledges Implemented'].toLocaleString()) : '') + '</td>\
                     </tr>\
                 </table>';
             var content = removeEmptyRowsFromPopupContent(popupContent, feature);
@@ -236,9 +235,9 @@
 			layer.bindPopup(content, { maxHeight: 400 });
         }
 
-        function style_PledgesPledgecountriesv2pledgespledgecountries_1_0() {
+        function style_PledgesPledgecountriesv3_1_0() {
             return {
-                pane: 'pane_PledgesPledgecountriesv2pledgespledgecountries_1',
+                pane: 'pane_PledgesPledgecountriesv3_1',
                 stroke: false, 
                 fill: true,
                 fillOpacity: 1,
@@ -246,20 +245,20 @@
                 interactive: true,
             }
         }
-        map.createPane('pane_PledgesPledgecountriesv2pledgespledgecountries_1');
-        map.getPane('pane_PledgesPledgecountriesv2pledgespledgecountries_1').style.zIndex = 401;
-        map.getPane('pane_PledgesPledgecountriesv2pledgespledgecountries_1').style['mix-blend-mode'] = 'normal';
-        var layer_PledgesPledgecountriesv2pledgespledgecountries_1 = new L.geoJson(json_PledgesPledgecountriesv2pledgespledgecountries_1, {
+        map.createPane('pane_PledgesPledgecountriesv3_1');
+        map.getPane('pane_PledgesPledgecountriesv3_1').style.zIndex = 401;
+        map.getPane('pane_PledgesPledgecountriesv3_1').style['mix-blend-mode'] = 'normal';
+        var layer_PledgesPledgecountriesv3_1 = new L.geoJson(json_PledgesPledgecountriesv3_1, {
             attribution: '',
             interactive: true,
-            dataVar: 'json_PledgesPledgecountriesv2pledgespledgecountries_1',
-            layerName: 'layer_PledgesPledgecountriesv2pledgespledgecountries_1',
-            pane: 'pane_PledgesPledgecountriesv2pledgespledgecountries_1',
-            onEachFeature: pop_PledgesPledgecountriesv2pledgespledgecountries_1,
-            style: style_PledgesPledgecountriesv2pledgespledgecountries_1_0,
+            dataVar: 'json_PledgesPledgecountriesv3_1',
+            layerName: 'layer_PledgesPledgecountriesv3_1',
+            pane: 'pane_PledgesPledgecountriesv3_1',
+            onEachFeature: pop_PledgesPledgecountriesv3_1,
+            style: style_PledgesPledgecountriesv3_1_0,
         });
-        bounds_group.addLayer(layer_PledgesPledgecountriesv2pledgespledgecountries_1);
-        map.addLayer(layer_PledgesPledgecountriesv2pledgespledgecountries_1);
+        bounds_group.addLayer(layer_PledgesPledgecountriesv3_1);
+        map.addLayer(layer_PledgesPledgecountriesv3_1);
         function pop_country_lines_2(feature, layer) {
             layer.on({
                 mouseout: function(e) {
