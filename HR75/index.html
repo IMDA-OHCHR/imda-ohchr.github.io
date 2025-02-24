@@ -93,9 +93,9 @@
             this.update();
             return this._div;
         };
-        /*title.update = function () {
-            this._div.innerHTML = '<h2>OHCHR HR 75 Pledges</h2>';
-        };*/
+        title.update = function () {
+            this._div.innerHTML = '';
+        };
         title.addTo(map);
         var abstract = new L.Control({'position':'bottomleft'});
         abstract.onAdd = function (map) {
