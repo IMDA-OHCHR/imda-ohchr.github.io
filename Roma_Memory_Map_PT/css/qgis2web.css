@@ -222,5 +222,5 @@
         }
         .leaflet-popup-content img {
             max-width:300px !important;
-            height:100% !important;
+            height:auto !important;
         }
