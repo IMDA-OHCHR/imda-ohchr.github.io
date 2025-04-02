@@ -221,7 +221,7 @@
             line-height:21px;
         }
         .leaflet-popup-content img {
-            width:100%: !important;
+            width:100% !important;
             max-width:300px !important;
             height:auto !important;
         }
