@@ -222,6 +222,7 @@
         }
         .leaflet-popup-content img {
             width:100% !important;
-            max-width:300px !important;
+            min-width:280px !important;
+            /*max-width:300px !important;*/
             height:auto !important;
         }
