@@ -1,0 +1,369 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 1200 700" role="img" aria-label="Interactive inflation rate line chart (hover to highlight)">
+  <style>
+    text{font-family:'Roboto Condensed',Roboto,Arial,Helvetica,sans-serif; font-size:12px; fill:#a7a9ac;}
+    #maintitle{font-size:18px; fill:#3b3b3c; font-family:Roboto,Arial,Helvetica,sans-serif;}
+    .axis{stroke:#c7c8ca; stroke-width:1;}
+    .grid{stroke:#ededee; stroke-width:0.5;}
+    .country-line{fill:none; stroke-width:1.5; opacity:0.9; transition:opacity 120ms, stroke-width 120ms;}
+    .country-line.dim{opacity:0.12;}
+    .country-line.highlight{stroke-width:3; opacity:1; }
+    .point{fill-opacity:0.0; pointer-events:visible; } /* make small hover target without visible clutter */
+    .point.visible{fill-opacity:1; r:3.2; }
+    .legend-text{font-size:11px; font-style:italic; fill:#6d6e71;}
+    .tooltip-rect{fill:#fff; stroke:#333; stroke-width:0.8; rx:4; ry:4; opacity:0.95;}
+    .tooltip-text{font-size:16px; font-weight:700; fill:#3b3b3c; font-family:Roboto,Arial,Helvetica,sans-serif;}
+    .value-text{font-size:14px; fill:#6d6e71;}
+    #yaxis-label{font-weight:700; fill:#3b3b3c;}
+  </style>
+
+  <!-- Title -->
+  <text x="80" y="26" font-weight="700" id="maintitle">Inflation, consumer prices (annual %) — 2014–2024</text>
+  <text x="80" y="46" style="font-style:italic;">hover a line to highlight and see values</text>
+  <!-- Plot area -->
+  <!-- margins -->
+  <!-- left margin 80, top 60, right 720 reserved for legend, bottom margin 90 -->
+  <g id="plot" transform="translate(0,0)">
+    <!-- background grid and axes -->
+    <!-- We'll build the axes/labels in JS to match scale precisely, but draw base lines here -->
+    <line x1="80" y1="620" x2="700" y2="620" class="axis"/>
+    <line x1="80" y1="80" x2="80" y2="620" class="axis"/>
+  </g>
+
+  <!-- Legend area (on right) -->
+  <g id="legend" transform="translate(720,60)"></g>
+
+  <!-- Tooltip group (hidden by default) -->
+  <g id="tooltip" visibility="hidden">
+    <rect id="tt-rect" x="0" y="0" width="120" height="44" class="tooltip-rect"></rect>
+    <text id="tt-name" x="8" y="18" class="tooltip-text">Country</text>
+    <text id="tt-value" x="8" y="36" class="value-text">Year: val%</text>
+  </g>
+
+  <script type="text/javascript"><![CDATA[
+    (function(){
+
+      // Data: country => array of 11 values for 2014..2024 (use null where missing)
+      const data = {
+  "Afghanistan": [4.7,-0.7,4.4,5.0,0.6,2.3,5.6,5.1,13.7,-4.6,-6.6],
+  "Bangladesh": [7.0,6.2,5.5,5.7,5.5,5.6,5.7,5.5,7.7,9.9,10.5],
+  "Bhutan": [8.3,4.5,3.2,5,2.7,2.7,5.6,7.3,5.6,4.2,2.8],
+  "Brunei Darussalam": [-0.2,-0.5,-0.3,-1.3,1.0,-0.4,1.9,1.7,3.7,0.4,-0.4],
+  "Cambodia": [3.9,1.2,3.0,2.9,2.5,1.9,2.9,2.9,5.3,2.1,null],
+  "India": [6.7,4.9,4.9,3.3,3.9,3.7,6.6,5.1,6.7,5.6,5.0],
+  "Indonesia": [6.4,6.4,3.5,3.8,3.2,3.0,1.9,1.6,4.2,3.7,null],
+  "Lao PDR": [4.1,1.3,1.6,0.8,2.0,3.3,5.1,3.8,23.0,31.2,23.1],
+  "Malaysia": [3.1,2.1,2.1,3.9,0.9,0.7,-1.1,2.5,3.4,2.5,1.8],
+  "Maldives": [2.1,1.0,0.5,2.8,-0.1,0.2,-1.4,0.5,2.3,2.9,1.4],
+  "Myanmar": [5.0,9.5,6.9,4.6,6.9,8.8,null,null,null,null,null],
+  "Nepal": [8.4,7.9,8.8,3.6,4.1,5.6,5.1,4.1,7.7,7.1,null],
+  "Pakistan": [7.2,2.5,3.8,4.1,5.1,10.6,9.7,9.5,19.9,30.8,12.6],
+  "Philippines": [3.6,0.7,1.3,2.9,5.3,2.4,2.4,3.9,5.8,6.0,3.2],
+  "Singapore": [1.0,-0.5,-0.5,0.6,0.4,0.6,-0.2,2.3,6.1,4.8,2.4],
+  "Sri Lanka": [3.2,3.8,4.0,7.7,2.1,3.5,6.2,7.0,49.7,16.5,-0.4],
+  "Thailand": [1.9,-0.9,0.2,0.7,1.1,0.7,-0.8,1.2,6.1,1.2,1.4],
+  "Timor-Leste": [0.8,0.6,-1.5,0.5,2.3,1.0,0.5,3.7,7.0,8.4,2.1],
+  "Viet Nam": [4.1,0.6,2.7,3.5,3.5,2.8,3.2,1.8,3.2,3.3,3.6]
+};
+
+      // config & scales
+      const svg = document.documentElement;
+      const plotLeft = 80, plotTop = 60, plotRight = 700, plotBottom = 620;
+      const width = plotRight - plotLeft;
+      const height = plotBottom - plotTop;
+      const years = [2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024];
+      const x0 = plotLeft;
+      const dx = width / (years.length - 1); // distance between year ticks
+      // fixed value scale chosen to accommodate extremes (Maldives -32.9 to 37.5)
+      const vMax = 50, vMin = -10;
+      const vSpan = vMax - vMin;
+      const yFor = v => {
+        if (v === null || v === undefined || isNaN(v)) return null;
+        // map vMax -> plotTop, vMin -> plotBottom
+        return plotTop + (vMax - v) / vSpan * height;
+      };
+
+      // color palette (distinct colors)
+      const colors = ["#b95380","#0076c0","#81ac32","#dc5b40","#a78db6","#a99783","#cf7e9e","#f78e1e","#d3ae06","#16b5c5","#bad5f0","#bddc94","#fcbc7c","#b6221e","#643589","#008690","#831251","#ffd331"];
+      const countryNames = Object.keys(data);
+
+      // build axes and grid lines
+      const plot = document.getElementById('plot');
+
+      // horizontal grid lines for -40..40 step 10
+      for (let v = -40; v <= 40; v += 10) {
+        const y = yFor(v);
+        const line = document.createElementNS(svg.namespaceURI, 'line');
+        line.setAttribute('x1', plotLeft);
+        line.setAttribute('x2', plotRight);
+        line.setAttribute('y1', y);
+        line.setAttribute('y2', y);
+        line.setAttribute('class','grid');
+        plot.appendChild(line);
+
+        const label = document.createElementNS(svg.namespaceURI, 'text');
+        label.setAttribute('x', plotLeft - 8);
+        label.setAttribute('y', y + 4);
+        label.setAttribute('text-anchor','end');
+        label.textContent = v;
+        plot.appendChild(label);
+      }
+
+      // x axis ticks & year labels
+      for (let i=0;i<years.length;i++){
+        const x = x0 + i*dx;
+        const tick = document.createElementNS(svg.namespaceURI, 'line');
+        tick.setAttribute('x1', x);
+        tick.setAttribute('x2', x);
+        tick.setAttribute('y1', plotBottom);
+        tick.setAttribute('y2', plotBottom + 6);
+        tick.setAttribute('class','axis');
+        plot.appendChild(tick);
+
+        const label = document.createElementNS(svg.namespaceURI, 'text');
+        label.setAttribute('x', x);
+        label.setAttribute('y', plotBottom + 20);
+        label.setAttribute('text-anchor','middle');
+        label.textContent = years[i];
+        plot.appendChild(label);
+      }
+
+      // y axis label
+      const yLabel = document.createElementNS(svg.namespaceURI, 'text');
+      yLabel.setAttribute('x', plotLeft - 80);
+      yLabel.setAttribute('y', plotTop + 16);
+      yLabel.setAttribute('transform', `rotate(-90 ${plotLeft-50} ${plotTop+6})`);
+      yLabel.setAttribute('text-anchor','middle');
+      yLabel.setAttribute('id','yaxis-label');  
+      yLabel.textContent = 'Inflation rate (%)';
+      plot.appendChild(yLabel);
+
+      // group to hold lines & points
+      const linesGroup = document.createElementNS(svg.namespaceURI, 'g');
+      linesGroup.setAttribute('id','linesGroup');
+      plot.appendChild(linesGroup);
+
+      // draw each country's path and points
+      countryNames.forEach((country, idx) => {
+        const vals = data[country];
+        const color = colors[idx % colors.length];
+
+        // build path d, skipping nulls (create gaps)
+        let d = '';
+        let segStarted = false;
+        for (let i=0;i<vals.length;i++){
+          const v = vals[i];
+          const x = x0 + i*dx;
+          const y = yFor(v);
+          if (y === null){
+            segStarted = false;
+            continue;
+          }
+          if (!segStarted){
+            d += `M ${x.toFixed(2)} ${y.toFixed(2)} `;
+            segStarted = true;
+          } else {
+            d += `L ${x.toFixed(2)} ${y.toFixed(2)} `;
+          }
+        }
+
+        // path element
+        const p = document.createElementNS(svg.namespaceURI, 'path');
+        p.setAttribute('d', d);
+        p.setAttribute('stroke', color);
+        p.setAttribute('class', 'country-line');
+        p.setAttribute('data-country', country);
+        p.setAttribute('opacity', '0.9');
+        linesGroup.appendChild(p);
+
+        // attach points (invisible small circles, used for hover detection and markers)
+        const ptsGroup = document.createElementNS(svg.namespaceURI, 'g');
+        ptsGroup.setAttribute('data-country', country);
+        for (let i=0;i<vals.length;i++){
+          const v = vals[i];
+          if (v === null || v === undefined || isNaN(v)) continue;
+          const x = x0 + i*dx;
+          const y = yFor(v);
+          const c = document.createElementNS(svg.namespaceURI, 'circle');
+          c.setAttribute('cx', x);
+          c.setAttribute('cy', y);
+          c.setAttribute('r', 6); // larger invisible hit area
+          c.setAttribute('fill', color);
+          c.setAttribute('class', 'point');
+          c.setAttribute('data-year-index', i);
+          c.setAttribute('data-year', years[i]);
+          c.setAttribute('data-value', v);
+          ptsGroup.appendChild(c);
+        }
+        linesGroup.appendChild(ptsGroup);
+      });
+
+      // build legend
+      const legend = document.getElementById('legend');
+      let ly = 0;
+      countryNames.forEach((country, idx) => {
+        const color = colors[idx % colors.length];
+        const rect = document.createElementNS(svg.namespaceURI, 'rect');
+        rect.setAttribute('x', 0);
+        rect.setAttribute('y', ly);
+        rect.setAttribute('width', 14);
+        rect.setAttribute('height', 12);
+        rect.setAttribute('fill', color);
+        legend.appendChild(rect);
+
+        const lab = document.createElementNS(svg.namespaceURI, 'text');
+        lab.setAttribute('x', 20);
+        lab.setAttribute('y', ly + 10);
+        lab.setAttribute('class','legend-text');
+        lab.textContent = country;
+        legend.appendChild(lab);
+
+        ly += 18;
+      });
+
+      // tooltip elements
+      const tt = document.getElementById('tooltip');
+      const ttRect = document.getElementById('tt-rect');
+      const ttName = document.getElementById('tt-name');
+      const ttValue = document.getElementById('tt-value');
+
+      // create marker circle that will show on the highlighted path
+      const marker = document.createElementNS(svg.namespaceURI, 'circle');
+      marker.setAttribute('r', 4.5);
+      marker.setAttribute('fill', '#fff');
+      marker.setAttribute('stroke', '#000');
+      marker.setAttribute('stroke-width', 1);
+      marker.setAttribute('visibility','hidden');
+      plot.appendChild(marker);
+
+      // helper: dim all lines except one
+      function setHighlight(country) {
+        const allPaths = linesGroup.querySelectorAll('.country-line');
+        allPaths.forEach(p=>{
+          if (p.getAttribute('data-country') === country){
+            p.classList.add('highlight');
+            p.classList.remove('dim');
+            p.setAttribute('opacity','1');
+            // bring to front
+            linesGroup.appendChild(p);
+          } else {
+            p.classList.add('dim');
+            p.classList.remove('highlight');
+          }
+        });
+      }
+      function clearHighlight(){
+        const allPaths = linesGroup.querySelectorAll('.country-line');
+        allPaths.forEach(p=>{
+          p.classList.remove('dim');
+          p.classList.remove('highlight');
+          p.setAttribute('opacity','0.9');
+        });
+        marker.setAttribute('visibility','hidden');
+      }
+
+      // attach interaction handlers
+      // we'll add listeners to each path for hover, and also to its points-group for mousemove detection
+      const pathElems = linesGroup.querySelectorAll('.country-line');
+      pathElems.forEach(p => {
+        const country = p.getAttribute('data-country');
+
+        // mouseover - highlight
+        p.addEventListener('mouseover', (ev) => {
+          setHighlight(country);
+          tt.setAttribute('visibility','visible');
+        });
+
+        // mouseout - clear
+        p.addEventListener('mouseout', (ev) => {
+          clearHighlight();
+          tt.setAttribute('visibility','hidden');
+        });
+
+        // mousemove - compute nearest year index from mouse x and display tooltip and marker
+        p.addEventListener('mousemove', (ev) => {
+          // get mouse position relative to svg
+          const pt = svg.createSVGPoint();
+          pt.x = ev.clientX; pt.y = ev.clientY;
+          const ctm = svg.getScreenCTM().inverse();
+          const loc = pt.matrixTransform(ctm);
+          const mouseX = loc.x;
+          // compute nearest year index
+          let rawIdx = Math.round((mouseX - x0) / dx);
+          rawIdx = Math.max(0, Math.min(rawIdx, years.length - 1));
+          const vals = data[country];
+          // find nearest non-null index by searching outward if selected is null
+          let idxFound = rawIdx;
+          if (vals[idxFound] === null || vals[idxFound] === undefined || isNaN(vals[idxFound])){
+            // search left/right
+            let left = idxFound-1, right = idxFound+1;
+            while (left >=0 || right < vals.length){
+              if (left>=0 && vals[left] !== null && !isNaN(vals[left])) { idxFound = left; break; }
+              if (right<vals.length && vals[right] !== null && !isNaN(vals[right])) { idxFound = right; break; }
+              left--; right++;
+            }
+          }
+          const value = vals[idxFound];
+          const x = x0 + idxFound*dx;
+          const y = yFor(value);
+
+          // place marker
+          marker.setAttribute('cx', x);
+          marker.setAttribute('cy', y);
+          marker.setAttribute('visibility','visible');
+
+          // tooltip content
+          const displayYear = years[idxFound];
+          ttName.textContent = country;
+          ttValue.textContent = `${displayYear}: ${value}%`;
+
+          // position tooltip near mouse but inside svg bounds
+          const tooltipWidth = 140, tooltipHeight = 44;
+          let ttX = x + 12;
+          let ttY = y - tooltipHeight/2;
+          // avoid going off right edge (plotRight is 700, legend starts at 720, but tooltip can go into legend area)
+          if (ttX + tooltipWidth > 1150) ttX = x - tooltipWidth - 12;
+          if (ttY < 30) ttY = 30;
+          if (ttY + tooltipHeight > 660) ttY = 660 - tooltipHeight;
+
+          tt.setAttribute('transform', `translate(${ttX}, ${ttY})`);
+          ttRect.setAttribute('width', tooltipWidth);
+          ttRect.setAttribute('height', tooltipHeight);
+        });
+      });
+
+      // also make legend items interactive: hover legend to highlight line
+      const legendRects = document.getElementById('legend').querySelectorAll('rect');
+      legendRects.forEach((r, i) => {
+        r.style.cursor = 'pointer';
+        r.addEventListener('mouseover', ()=> {
+          setHighlight(countryNames[i]);
+          tt.setAttribute('visibility','visible');
+        });
+        r.addEventListener('mouseout', ()=> {
+          clearHighlight();
+          tt.setAttribute('visibility','hidden');
+        });
+        // also allow clicking legend entry to pin highlight (toggle)
+        let pinned = false;
+        r.addEventListener('click', ()=> {
+          pinned = !pinned;
+          if (pinned) {
+            setHighlight(countryNames[i]);
+          } else {
+            clearHighlight();
+          }
+        });
+      });
+
+      // initial instruction text near bottom
+      const instr = document.createElementNS(svg.namespaceURI, 'text');
+      instr.setAttribute('x', plotLeft);
+      instr.setAttribute('y', plotBottom + 50);
+      instr.setAttribute('font-size','11');
+      instr.setAttribute('font-style','italic');
+      instr.textContent = 'Source: World Bank (18/7/2025 update)';
+      plot.appendChild(instr);
+
+    })();
+  ]]></script>
+</svg>
