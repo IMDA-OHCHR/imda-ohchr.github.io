@@ -89,8 +89,8 @@
       // build axes and grid lines
       const plot = document.getElementById('plot');
 
-      // horizontal grid lines for -40..40 step 10
-      for (let v = -40; v <= 40; v += 10) {
+      // horizontal grid lines for -10..50 step 10
+      for (let v = -10; v <= 50; v += 10) {
         const y = yFor(v);
         const line = document.createElementNS(svg.namespaceURI, 'line');
         line.setAttribute('x1', plotLeft);
