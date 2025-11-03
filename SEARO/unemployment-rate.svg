@@ -1,0 +1,197 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 1200 700" role="img" aria-label="South and Southeast Asia Unemployment Heatmaps">
+  <style>
+    text{font-family:'Roboto Condensed',Roboto,Arial,Helvetica,sans-serif; font-size:12px; fill:#a7a9ac;}
+    .title{font-size:18px; fill:#3b3b3c; font-family:Roboto,Arial,Helvetica,sans-serif; font-weight:700;}
+    .cell{stroke:#fff; stroke-width:1; cursor:pointer;}
+    .cell.no-data{fill:#fff; stroke:#4d4d4f;}
+    .cell.highlight{stroke:#000; stroke-width:2;}
+    .legend-text{font-size:11px; font-style:italic; fill:#6d6e71;}
+    .tooltip-rect{fill:#fff; stroke:#333; stroke-width:0.8; rx:4; ry:4; opacity:0.95;}
+    .tooltip-text{font-size:16px; font-weight:700; fill:#3b3b3c; font-family:Roboto,Arial,Helvetica,sans-serif;}
+    .value-text{font-size:14px; fill:#6d6e71;}
+    .y-axis-label{fill:#3b3b3c;}
+    .legend-title{fill:#3b3b3c; font-weight:700;}
+    .source-text{font-style:italic;}
+  </style>
+
+  <!-- Titles -->
+  <text x="0" y="26" class="title">Unemployment Rate in South Asian Countries</text>
+  <text x="0" y="50" style="font-style:italic;">hover to see a cell value</text>
+  <text x="700" y="26" class="title">Unemployment Rate in Southeast Asian Countries</text>
+  <text x="700" y="50" style="font-style:italic;">hover to see a cell value</text>
+
+  <g id="plot-sa" transform="translate(0,100)"></g>
+  <g id="plot-sea" transform="translate(700,100)"></g>
+
+  <g id="tooltip" visibility="hidden">
+    <rect id="tt-rect" x="0" y="0" width="140" height="44" class="tooltip-rect"></rect>
+    <text id="tt-name" x="8" y="18" class="tooltip-text">Country</text>
+    <text id="tt-value" x="8" y="36" class="value-text">Year: val</text>
+  </g>
+
+  <script type="text/javascript"><![CDATA[
+  (function(){
+    const dataSA = {
+      "Afghanistan":[1.692,null,7.915,null,11.184,null,11.71,5.679,null,null,null,null],
+      "Bangladesh":[null,4.426,null,4.35,4.372,null,null,null,null,null,4.593,null],
+      "Bhutan":[2.05,2.87,2.63,2.45,null,null,3.35,2.72,5.03,4.804,5.947,3.126],
+      "India":[3.222,null,null,null,null,7.652,6.51,7.859,6.38,4.822,4.172,null],
+      "Maldives":[null,null,3.846,null,5.771,null,4.562,null,null,null,null,null],
+      "Nepal":[null,null,null,3.1,null,10.66,null,null,null,null,null,null],
+      "Pakistan":[3.667,2.954,1.827,3.566,2.286,null,4.083,4.83,null,6.338,null,null],
+      "Sri Lanka":[3.88,4.186,4.157,4.519,4.243,4.046,4.318,4.67,5.365,4.981,4.528,null],
+      "South Asia":[3.26,null,null,null,null,7.18,6.28,7.88,6.35,4.79,4.17,null]
+    };
+
+    const dataSEA = {
+      "Brunei Darussalam":[null,null,6.862,null,9.316,8.7,6.6,7.409,4.905,5.191,5.296,null],
+      "Indonesia":[4.468,4.336,4.049,4.514,4.301,3.783,4.387,3.59,4.255,3.827,3.462,3.308],
+      "Cambodia":[1.279,0.438,0.692,0.393,0.716,0.141,null,0.499,0.172,0.396,null,null],
+      "Lao PDR":[null,null,null,null,null,3.269,null,null,null,1.209,null,null],
+      "Myanmar":[null,null,0.766,null,1.356,0.767,0.407,1.476,null,null,null,null],
+      "Malaysia":[3.1,3.16,2.88,3.1,3.44,3.41,3.3,3.26,4.54,4.64,3.93,null],
+      "Philippines":[3.504,3.497,3.6,3.068,2.695,2.552,2.338,2.237,2.522,3.398,2.598,null],
+      "Singapore":[3.72,3.86,3.74,3.79,4.08,4.2,null,3.1,4.1,4.64,3.591,3.444],
+      "Thailand":[0.58,0.249,0.576,0.597,0.688,0.83,0.766,0.716,1.099,1.215,0.94,0.733],
+      "Timor-Leste":[null,4.05,null,3.678,4.657,null,null,null,2.344,1.537,null,null],
+      "Viet Nam":[1.027,1.316,1.256,1.849,1.848,1.874,1.161,1.681,2.103,2.385,1.523,1.645],
+      "East Asia & Pacific":[3.8,3.74,3.76,null,null,3.53,4.3,4.34,4.82,4.55,null,null]
+    };
+
+    const years = [2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023];
+
+    const allValues = [...Object.values(dataSA).flat(), ...Object.values(dataSEA).flat()].filter(v=>v!==null);
+    const vMin = Math.min(...allValues), vMax=Math.max(...allValues), vMid=7.0;
+
+    const colorLight=[255,229,229], midColor=[209,41,47], colorDark=[128,0,0];
+    function getColor(v){
+      if(v===null) return null;
+      if(v<=vMid){
+        let t=(v-vMin)/(vMid-vMin);
+        return `rgb(${Math.round(colorLight[0]*(1-t)+midColor[0]*t)},${Math.round(colorLight[1]*(1-t)+midColor[1]*t)},${Math.round(colorLight[2]*(1-t)+midColor[2]*t)})`;
+      } else {
+        let t=(v-vMid)/(vMax-vMid);
+        return `rgb(${Math.round(midColor[0]*(1-t)+colorDark[0]*t)},${Math.round(midColor[1]*(1-t)+colorDark[1]*t)},${Math.round(midColor[2]*(1-t)+colorDark[2]*t)})`;
+      }
+    }
+
+    const plots = [
+      {data:dataSA, g:'plot-sa'},
+      {data:dataSEA, g:'plot-sea'}
+    ];
+    const cellSize=40, cellGap=4;
+
+    const svg=document.documentElement;
+    const tt=document.getElementById('tooltip');
+    const ttName=document.getElementById('tt-name');
+    const ttValue=document.getElementById('tt-value');
+
+    plots.forEach(p=>{
+      const plot=document.getElementById(p.g);
+      const countries=Object.keys(p.data);
+      const cells=[];
+      countries.forEach((country,i)=>{
+        const vals=p.data[country];
+        vals.forEach((v,j)=>{
+          const rect=document.createElementNS(svg.namespaceURI,'rect');
+          rect.setAttribute('x',j*(cellSize+cellGap));
+          rect.setAttribute('y',i*(cellSize+cellGap));
+          rect.setAttribute('width',cellSize);
+          rect.setAttribute('height',cellSize);
+          if(v===null){ rect.setAttribute('class','cell no-data'); }
+          else { rect.setAttribute('fill',getColor(v)); rect.setAttribute('class','cell'); }
+          rect.dataset.country=country;
+          rect.dataset.year=years[j];
+          rect.dataset.value=v;
+          plot.appendChild(rect);
+          cells.push(rect);
+        });
+      });
+
+      countries.forEach((country,i)=>{
+        const text=document.createElementNS(svg.namespaceURI,'text');
+        text.setAttribute('x',-10);
+        text.setAttribute('y',i*(cellSize+cellGap)+cellSize/2+4);
+        text.setAttribute('text-anchor','end');
+        text.setAttribute('class','y-axis-label');
+        text.textContent=country;
+        plot.appendChild(text);
+      });
+
+      years.forEach((yr,j)=>{
+        const text=document.createElementNS(svg.namespaceURI,'text');
+        text.setAttribute('x',j*(cellSize+cellGap)+cellSize/2);
+        text.setAttribute('y',-10);
+        text.setAttribute('text-anchor','middle');
+        text.textContent=yr;
+        plot.appendChild(text);
+      });
+
+      cells.forEach(cell=>{
+        cell.addEventListener('mouseover',()=>{
+          tt.setAttribute('visibility','visible');
+          ttName.textContent=cell.dataset.country;
+          ttValue.textContent=cell.dataset.year+': '+(cell.dataset.value=== "null"?"No data":cell.dataset.value);
+        });
+        cell.addEventListener('mouseout',()=>{tt.setAttribute('visibility','hidden'); cell.classList.remove('highlight');});
+        cell.addEventListener('mousemove',ev=>{
+          const pt=svg.createSVGPoint();
+          pt.x=ev.clientX; pt.y=ev.clientY;
+          const loc=pt.matrixTransform(svg.getScreenCTM().inverse());
+          let x=loc.x+12, y=loc.y-22;
+          if(x+140>1150) x=loc.x-152;
+          if(y<30) y=30;
+          tt.setAttribute('transform',`translate(${x},${y})`);
+        });
+      });
+    });
+
+    // Shared legend
+    const legendX=0, legendY=550, legendWidth=500, legendHeight=20;
+    const legendTitle=document.createElementNS(svg.namespaceURI,'text');
+    legendTitle.setAttribute('x',legendX);
+    legendTitle.setAttribute('y',legendY-10);
+    legendTitle.setAttribute('class','legend-title');
+    legendTitle.textContent='Unemployment rate (%)';
+    svg.appendChild(legendTitle);
+
+    const defs=document.createElementNS(svg.namespaceURI,'defs');
+    const grad=document.createElementNS(svg.namespaceURI,'linearGradient');
+    grad.setAttribute('id','legendGrad');
+    grad.setAttribute('x1','0%'); grad.setAttribute('x2','100%'); grad.setAttribute('y1','0%'); grad.setAttribute('y2','0%');
+    [["0%",colorLight],["50%",midColor],["100%",colorDark]].forEach(([off,c])=>{
+      const stop=document.createElementNS(svg.namespaceURI,'stop');
+      stop.setAttribute('offset',off);
+      stop.setAttribute('stop-color',`rgb(${c[0]},${c[1]},${c[2]})`);
+      grad.appendChild(stop);
+    });
+    defs.appendChild(grad);
+    svg.appendChild(defs);
+
+    const legendRect=document.createElementNS(svg.namespaceURI,'rect');
+    legendRect.setAttribute('x',legendX); legendRect.setAttribute('y',legendY);
+    legendRect.setAttribute('width',legendWidth); legendRect.setAttribute('height',legendHeight);
+    legendRect.setAttribute('fill','url(#legendGrad)');
+    svg.appendChild(legendRect);
+
+    for(let v=Math.ceil(vMin); v<=vMax; v+=2){
+      const x=legendX + (v-vMin)/(vMax-vMin)*legendWidth;
+      const line=document.createElementNS(svg.namespaceURI,'line');
+      line.setAttribute('x1',x); line.setAttribute('x2',x); line.setAttribute('y1',legendY); line.setAttribute('y2',legendY+legendHeight+5);
+      line.setAttribute('stroke','#4d4d4f'); line.setAttribute('stroke-width','1'); svg.appendChild(line);
+
+      const text=document.createElementNS(svg.namespaceURI,'text');
+      text.setAttribute('x',x); text.setAttribute('y',legendY+legendHeight+20); text.setAttribute('text-anchor','middle');
+      text.textContent=v.toFixed(1); svg.appendChild(text);
+    }
+
+    const sourceText=document.createElementNS(svg.namespaceURI,'text');
+    sourceText.setAttribute('x',legendX);
+    sourceText.setAttribute('y',legendY+legendHeight+40);
+    sourceText.setAttribute('class','source-text');
+    sourceText.textContent='Source: World Bank';
+    svg.appendChild(sourceText);
+
+  })();
+  ]]></script>
+</svg>
