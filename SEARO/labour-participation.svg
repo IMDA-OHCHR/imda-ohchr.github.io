@@ -1,0 +1,194 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 1200 700" role="img" aria-label="Labour participation in ASEAN by gender (%)">
+  <style>
+    text{font-family:'Roboto Condensed',Roboto,Arial,Helvetica,sans-serif; font-size:12px; fill:#a7a9ac;}
+    #maintitle{font-size:18px; fill:#3b3b3c; font-family:Roboto,Arial,Helvetica,sans-serif;}
+    .axis{stroke:#c7c8ca; stroke-width:1;}
+    .grid{stroke:#ededee; stroke-width:0.5;}
+    .bar{opacity:0.9; transition:opacity 120ms;}
+    .bar.dim{opacity:0.12;}
+    .bar.highlight{opacity:1;}
+    .legend-text{font-size:11px; font-style:italic; fill:#6d6e71;}
+    .tooltip-rect{fill:#fff; stroke:#333; stroke-width:0.8; rx:4; ry:4; opacity:0.95;}
+    .tooltip-text{font-size:16px; font-weight:700; fill:#3b3b3c; font-family:Roboto,Arial,Helvetica,sans-serif;}
+    .value-text{font-size:14px; fill:#6d6e71;}
+    #yaxis-label{font-weight:700; fill:#3b3b3c;}
+  </style>
+
+  <!-- Title -->
+  <text x="80" y="26" font-weight="700" id="maintitle">Labour participation in ASEAN by gender (%)</text>
+  <text x="80" y="46" style="font-style:italic;">hover a bar to highlight and see values</text>
+
+  <!-- Plot area -->
+  <g id="plot" transform="translate(0,0)">
+    <line x1="80" y1="620" x2="1100" y2="620" class="axis"/>
+    <line x1="80" y1="80" x2="80" y2="620" class="axis"/>
+  </g>
+
+  <!-- Legend area -->
+  <g id="legend" transform="translate(1120,60)"></g>
+
+  <!-- Tooltip -->
+  <g id="tooltip" visibility="hidden">
+    <rect id="tt-rect" x="0" y="0" width="148" height="44" class="tooltip-rect"></rect>
+    <text id="tt-name" x="8" y="18" class="tooltip-text">Country</text>
+    <text id="tt-value" x="8" y="36" class="value-text">Value</text>
+  </g>
+
+  <script type="text/javascript"><![CDATA[
+  (function(){
+    const data = {
+      "Brunei Darussalam": [71.5, 52.8],
+      "Cambodia": [88.7, 78.9],
+      "Indonesia": [83.9, 53.4],
+      "Lao PDR": [52.6, 41.9],
+      "Malaysia": [81.9, 55.8],
+      "Myanmar (2019)": [75.4, 46.1],
+      "Philippines": [75.8, 53.5],
+      "Singapore": [77.0, 63.4],
+      "Thailand": [76.6, 60.3],
+      "Viet Nam": [74.9, 62.4]
+    };
+
+    const svg = document.documentElement;
+    const plotLeft = 80, plotTop = 60, plotRight = 1100, plotBottom = 620;
+    const plotWidth = plotRight - plotLeft;
+    const plotHeight = plotBottom - plotTop;
+
+    const countries = Object.keys(data);
+    const numCountries = countries.length;
+    const barWidth = 30;
+    const gap = (plotWidth - numCountries*2*barWidth) / (numCountries+1); // space between groups
+
+    const yFor = v => plotTop + (100 - v)/100 * plotHeight;
+
+    const plot = document.getElementById('plot');
+
+    // horizontal grid lines 0-100 step 10
+    for(let v=0;v<=100;v+=10){
+      const y = yFor(v);
+      const line = document.createElementNS(svg.namespaceURI,'line');
+      line.setAttribute('x1', plotLeft);
+      line.setAttribute('x2', plotRight);
+      line.setAttribute('y1', y);
+      line.setAttribute('y2', y);
+      line.setAttribute('class','grid');
+      plot.appendChild(line);
+
+      const label = document.createElementNS(svg.namespaceURI,'text');
+      label.setAttribute('x', plotLeft - 8);
+      label.setAttribute('y', y + 4);
+      label.setAttribute('text-anchor','end');
+      label.textContent = v + "%";
+      plot.appendChild(label);
+    }
+
+    // x-axis country labels
+    countries.forEach((country,i)=>{
+      const x = plotLeft + gap + i*(2*barWidth + gap) + barWidth;
+      const label = document.createElementNS(svg.namespaceURI,'text');
+      label.setAttribute('x', x);
+      label.setAttribute('y', plotBottom + 20);
+      label.setAttribute('text-anchor','middle');
+      label.textContent = country;
+      plot.appendChild(label);
+    });
+
+    const linesGroup = document.createElementNS(svg.namespaceURI,'g');
+    linesGroup.setAttribute('id','barsGroup');
+    plot.appendChild(linesGroup);
+
+    const colors = ["#215313","#a7d16f"]; // male/female
+
+    countries.forEach((country,i)=>{
+      const vals = data[country];
+      vals.forEach((v,j)=>{
+        const x = plotLeft + gap + i*(2*barWidth + gap) + j*barWidth;
+        const y = yFor(v);
+        const height = plotBottom - y;
+        const rect = document.createElementNS(svg.namespaceURI,'rect');
+        rect.setAttribute('x', x);
+        rect.setAttribute('y', y);
+        rect.setAttribute('width', barWidth);
+        rect.setAttribute('height', height);
+        rect.setAttribute('fill', colors[j]);
+        rect.setAttribute('class','bar');
+        rect.setAttribute('data-country', country);
+        rect.setAttribute('data-gender', j===0?'Male':'Female');
+        rect.setAttribute('data-value', v);
+        linesGroup.appendChild(rect);
+      });
+    });
+
+    // Legend
+    const legend = document.getElementById('legend');
+    ["Male","Female"].forEach((g,i)=>{
+      const rect = document.createElementNS(svg.namespaceURI,'rect');
+      rect.setAttribute('x',0);
+      rect.setAttribute('y',i*20);
+      rect.setAttribute('width',14);
+      rect.setAttribute('height',12);
+      rect.setAttribute('fill', colors[i]);
+      legend.appendChild(rect);
+
+      const lab = document.createElementNS(svg.namespaceURI,'text');
+      lab.setAttribute('x',20);
+      lab.setAttribute('y',i*20+10);
+      lab.setAttribute('class','legend-text');
+      lab.textContent = g;
+      legend.appendChild(lab);
+    });
+
+    // Tooltip and interactions
+    const tt = document.getElementById('tooltip');
+    const ttRect = document.getElementById('tt-rect');
+    const ttName = document.getElementById('tt-name');
+    const ttValue = document.getElementById('tt-value');
+
+    const bars = linesGroup.querySelectorAll('.bar');
+    bars.forEach(bar=>{
+      bar.addEventListener('mouseover', ()=>{
+        bars.forEach(b=>b.classList.add('dim'));
+        bar.classList.add('highlight');
+        tt.setAttribute('visibility','visible');
+        ttName.textContent = bar.getAttribute('data-country');
+        ttValue.textContent = bar.getAttribute('data-gender')+": "+bar.getAttribute('data-value')+"%";
+      });
+      bar.addEventListener('mouseout', ()=>{
+        bars.forEach(b=>b.classList.remove('dim','highlight'));
+        tt.setAttribute('visibility','hidden');
+      });
+      bar.addEventListener('mousemove', ev=>{
+        const pt = svg.createSVGPoint();
+        pt.x = ev.clientX; pt.y = ev.clientY;
+        const loc = pt.matrixTransform(svg.getScreenCTM().inverse());
+        let ttX = loc.x + 12;
+        let ttY = loc.y - 22;
+        if(ttX+140>1150) ttX = loc.x-152;
+        if(ttY<30) ttY = 30;
+        if(ttY+44>660) ttY = 660-44;
+        tt.setAttribute('transform',`translate(${ttX},${ttY})`);
+      });
+    });
+
+    // y-axis label
+    const yLabel = document.createElementNS(svg.namespaceURI,'text');
+    yLabel.setAttribute('x', plotLeft - 80);
+    yLabel.setAttribute('y', plotTop + 16);
+    yLabel.setAttribute('transform', `rotate(-90 ${plotLeft-50} ${plotTop+6})`);
+    yLabel.setAttribute('text-anchor','middle');
+    yLabel.setAttribute('id','yaxis-label');  
+    yLabel.textContent = 'percentage (%)';
+    plot.appendChild(yLabel);
+
+    // initial instruction text near bottom
+      const instr = document.createElementNS(svg.namespaceURI, 'text');
+      instr.setAttribute('x', plotLeft);
+      instr.setAttribute('y', plotBottom + 50);
+      instr.setAttribute('font-size','11');
+      instr.setAttribute('font-style','italic');
+      instr.textContent = 'Source: ASEAN Secretariat  |  Note: Data for Singapore refers to residents only';
+      plot.appendChild(instr);
+
+  })();
+  ]]></script>
+</svg>
