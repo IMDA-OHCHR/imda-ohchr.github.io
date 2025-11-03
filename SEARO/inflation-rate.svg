@@ -30,7 +30,7 @@
   </g>
 
   <!-- Legend area (on right) -->
-  <g id="legend" transform="translate(720,60)"></g>
+  <g id="legend" transform="translate(1120,60)"></g>
 
   <!-- Tooltip group (hidden by default) -->
   <g id="tooltip" visibility="hidden">
@@ -67,7 +67,7 @@
 
       // config & scales
       const svg = document.documentElement;
-      const plotLeft = 80, plotTop = 60, plotRight = 700, plotBottom = 620;
+      const plotLeft = 80, plotTop = 60, plotRight = 1100, plotBottom = 620;
       const width = plotRight - plotLeft;
       const height = plotBottom - plotTop;
       const years = [2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024];
@@ -83,7 +83,7 @@
       };
 
       // color palette (distinct colors)
-      const colors = ["#b95380","#0076c0","#81ac32","#dc5b40","#a78db6","#a99783","#cf7e9e","#f78e1e","#d3ae06","#16b5c5","#bad5f0","#bddc94","#fcbc7c","#b6221e","#643589","#008690","#831251","#ffd331"];
+      const colors = ["#b95380","#0076c0","#81ac32","#dc5b40","#a78db6","#a99783","#cf7e9e","#f78e1e","#d3ae06","#16b5c5","#bad5f0","#bddc94","#fcbc7c","#b6221e","#643589","#008690","#831251","#ffd331","e3d1c2"];
       const countryNames = Object.keys(data);
 
       // build axes and grid lines
