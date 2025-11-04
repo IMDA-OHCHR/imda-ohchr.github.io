@@ -7,8 +7,12 @@
 <style>
   body {
     font-family: Roboto,Helvetica,Arial,sans-serif;
+    display: flex;
+    justify-content: center; /* horizontal centering */
   }
-
+  #chart {
+    margin: 0 auto;
+  }
   .node rect {
     cursor: move;
     fill-opacity: 0.9;
@@ -297,8 +301,8 @@ const originColors = new Map([
 
 // -------------------- SVG DIMENSIONS --------------------
 const margin = {top: 100, right: 350, bottom: 10, left: 350}, // extra top padding for headings
-      width = 1600 - margin.left - margin.right,
-      height = 1600 - margin.top - margin.bottom;
+      width = 1400 - margin.left - margin.right,
+      height = 1400 - margin.top - margin.bottom;
 
 const svg = d3.select("#chart")
   .append("svg")
