@@ -74,7 +74,7 @@ const data = [
 {source:"Cambodia", value:43862, target:"Australia"},
 {source:"India", value:876074, target:"Australia"},
 {source:"Indonesia", value:104566, target:"Australia"},
-{source:"Lao People's Democratic Republic", value:11771, target:"Australia"},
+{source:"Lao PDR", value:11771, target:"Australia"},
 {source:"Malaysia", value:181202, target:"Australia"},
 {source:"Maldives", value:712, target:"Australia"},
 {source:"Myanmar", value:46297, target:"Australia"},
@@ -94,7 +94,7 @@ const data = [
 {source:"Cambodia", value:26460, target:"Bangladesh"},
 {source:"India", value:46385, target:"Bangladesh"},
 {source:"Indonesia", value:205947, target:"Bangladesh"},
-{source:"Lao People's Democratic Republic", value:118769, target:"Bangladesh"},
+{source:"Lao PDR", value:118769, target:"Bangladesh"},
 {source:"Malaysia", value:274253, target:"Bangladesh"},
 {source:"Myanmar", value:1246705, target:"Bangladesh"},
 {source:"Nepal", value:52621, target:"Bangladesh"},
@@ -110,7 +110,7 @@ const data = [
 {source:"Bangladesh", value:79033, target:"Canada"},
 {source:"Cambodia", value:22917, target:"Canada"},
 {source:"India", value:1015630, target:"Canada"},
-{source:"Lao People's Democratic Republic", value:13292, target:"Canada"},
+{source:"Lao PDR", value:13292, target:"Canada"},
 {source:"Malaysia", value:24975, target:"Canada"},
 {source:"Myanmar", value:10379, target:"Canada"},
 {source:"Nepal", value:29554, target:"Canada"},
@@ -119,14 +119,14 @@ const data = [
 {source:"Singapore", value:12878, target:"Canada"},
 {source:"Sri Lanka", value:140870, target:"Canada"},
 {source:"Viet Nam", value:179690, target:"Canada"},
-{source:"Lao People's Democratic Republic", value:9927, target:"China"},
+{source:"Lao PDR", value:9927, target:"China"},
 {source:"Myanmar", value:367052, target:"China"},
 {source:"Singapore", value:9088, target:"China"},
 {source:"Viet Nam", value:88254, target:"China"},
 {source:"Afghanistan", value:89849, target:"France"},
 {source:"Cambodia", value:57402, target:"France"},
 {source:"India", value:66688, target:"France"},
-{source:"Lao People's Democratic Republic", value:36591, target:"France"},
+{source:"Lao PDR", value:36591, target:"France"},
 {source:"Pakistan", value:36278, target:"France"},
 {source:"Sri Lanka", value:56880, target:"France"},
 {source:"Viet Nam", value:116008, target:"France"},
@@ -245,7 +245,7 @@ const data = [
 {source:"Viet Nam", value:263078, target:"Taiwan"},
 {source:"Cambodia", value:375635, target:"Thailand"},
 {source:"India", value:56847, target:"Thailand"},
-{source:"Lao People's Democratic Republic", value:285819, target:"Thailand"},
+{source:"Lao PDR", value:285819, target:"Thailand"},
 {source:"Myanmar", value:1708695, target:"Thailand"},
 {source:"Afghanistan", value:332053, target:"Türkiye"},
 {source:"Bangladesh", value:1024949, target:"United Arab Emirates"},
@@ -255,19 +255,19 @@ const data = [
 {source:"Pakistan", value:932356, target:"United Arab Emirates"},
 {source:"Philippines", value:528527, target:"United Arab Emirates"},
 {source:"Sri Lanka", value:112759, target:"United Arab Emirates"},
-{source:"Afghanistan", value:99398, target:"United Kingdom of Great Britain and Northern Ireland"},
-{source:"Bangladesh", value:298666, target:"United Kingdom of Great Britain and Northern Ireland"},
-{source:"India", value:1044779, target:"United Kingdom of Great Britain and Northern Ireland"},
-{source:"Malaysia", value:66932, target:"United Kingdom of Great Britain and Northern Ireland"},
-{source:"Pakistan", value:703309, target:"United Kingdom of Great Britain and Northern Ireland"},
-{source:"Philippines", value:176515, target:"United Kingdom of Great Britain and Northern Ireland"},
-{source:"Singapore", value:45936, target:"United Kingdom of Great Britain and Northern Ireland"},
-{source:"Sri Lanka", value:160178, target:"United Kingdom of Great Britain and Northern Ireland"},
+{source:"Afghanistan", value:99398, target:"United Kingdom"},
+{source:"Bangladesh", value:298666, target:"United Kingdom"},
+{source:"India", value:1044779, target:"United Kingdom"},
+{source:"Malaysia", value:66932, target:"United Kingdom"},
+{source:"Pakistan", value:703309, target:"United Kingdom"},
+{source:"Philippines", value:176515, target:"United Kingdom"},
+{source:"Singapore", value:45936, target:"United Kingdom"},
+{source:"Sri Lanka", value:160178, target:"United Kingdom"},
 {source:"Afghanistan", value:199252, target:"United States of America"},
 {source:"Bangladesh", value:357581, target:"United States of America"},
 {source:"Cambodia", value:171380, target:"United States of America"},
 {source:"India", value:3165238, target:"United States of America"},
-{source:"Lao People's Democratic Republic", value:176588, target:"United States of America"},
+{source:"Lao PDR", value:176588, target:"United States of America"},
 {source:"Myanmar", value:199585, target:"United States of America"},
 {source:"Nepal", value:264317, target:"United States of America"},
 {source:"Pakistan", value:452748, target:"United States of America"},
@@ -291,7 +291,7 @@ const originColors = new Map([
   ["Sri Lanka", "#c17015"],
   ["Thailand", "#002a53"],
   ["Cambodia", "#fdcd9d"],
-  ["Lao People's Democratic Republic", "#8a8c8e"],
+  ["Lao PDR", "#8a8c8e"],
   ["Singapore", "#bad5f0"],
   ["Timor-Leste", "#bba9c7"],
   ["Bhutan", "#004e54"],
@@ -300,7 +300,7 @@ const originColors = new Map([
 ]);
 
 // -------------------- SVG DIMENSIONS --------------------
-const margin = {top: 100, right: 350, bottom: 10, left: 350}, // extra top padding for headings
+const margin = {top: 100, right: 180, bottom: 10, left: 110}, // extra top padding for headings
       width = 1400 - margin.left - margin.right,
       height = 1400 - margin.top - margin.bottom;
 
@@ -434,21 +434,21 @@ node.append("text").call(wrapTextVerticalCentered, 180);
 // -------------------- HEADINGS --------------------
 svg.append("text")
   .attr("class","title")
-  .attr("x", -200) // align with right edge of left node labels
+  .attr("x", -100) // align with right edge of left node labels
   .attr("y", -margin.top + 40)
   .attr("text-anchor", "start")
   .text("Number of migrants in South and Southeast Asia: countries of origin and countries of destination");
     
 svg.append("text")
   .attr("class","heading")
-  .attr("x", -60) // align with right edge of left node labels
+  .attr("x", -20) // align with right edge of left node labels
   .attr("y", -margin.top + 80)
   .attr("text-anchor", "end")
   .text("ORIGIN COUNTRIES");
 
 svg.append("text")
   .attr("class","heading")
-  .attr("x", width + nodeWidth + 70) // align with left edge of right node labels
+  .attr("x", width + nodeWidth + 50) // align with left edge of right node labels
   .attr("y", -margin.top + 80)
   .attr("text-anchor", "start")
   .text("DESTINATION COUNTRIES");
