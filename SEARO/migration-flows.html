@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Migration in South and Southeast Asia: countries of origin and countries of destination</title>
+<style>
+  body {
+    font-family: Roboto,Helvetica,Arial,sans-serif;
+  }
+
+  .node rect {
+    cursor: move;
+    fill-opacity: 0.9;
+    shape-rendering: crispEdges;
+  }
+
+  .node text {
+    pointer-events: none;
+    font-size: 12px;
+  }
+
+  .link {
+    fill: none;
+    stroke-opacity: 0.3;
+  }
+
+  .link:hover {
+    stroke-opacity: 0.8;
+  }
+
+  .tooltip {
+    position: absolute;
+    text-align: center;
+    padding: 6px;
+    font: 12px sans-serif;
+    background: rgba(0,0,0,80);
+    border: 0px;
+    border-radius: 8px;
+    pointer-events: none;
+    color:#FFFFFF
+  }
+
+  .heading {
+    font-size: 14px;
+    font-weight: bold;
+    text-anchor: middle;
+  }
+  .title {
+    font-size: 18px;
+    font-weight: bold;
+    color:#3b3b3c;
+    text-anchor: left;
+  }
+    
+</style>
+</head>
+<body>
+<div id="chart"></div>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+<script>
+// -------------------- DATA --------------------
+const data = [
+{source:"Pakistan", value:69788, target:"Afghanistan"},
+{source:"Afghanistan", value:81506, target:"Australia"},
+{source:"Bangladesh", value:64969, target:"Australia"},
+{source:"Bhutan", value:25363, target:"Australia"},
+{source:"Cambodia", value:43862, target:"Australia"},
+{source:"India", value:876074, target:"Australia"},
+{source:"Indonesia", value:104566, target:"Australia"},
+{source:"Lao People's Democratic Republic", value:11771, target:"Australia"},
+{source:"Malaysia", value:181202, target:"Australia"},
+{source:"Maldives", value:712, target:"Australia"},
+{source:"Myanmar", value:46297, target:"Australia"},
+{source:"Nepal", value:197472, target:"Australia"},
+{source:"Pakistan", value:127340, target:"Australia"},
+{source:"Philippines", value:356833, target:"Australia"},
+{source:"Singapore", value:68087, target:"Australia"},
+{source:"Sri Lanka", value:156876, target:"Australia"},
+{source:"Thailand", value:109845, target:"Australia"},
+{source:"Timor-Leste", value:11546, target:"Australia"},
+{source:"Viet Nam", value:294435, target:"Australia"},
+{source:"Bangladesh", value:103283, target:"Bahrain"},
+{source:"India", value:327698, target:"Bahrain"},
+{source:"Indonesia", value:30062, target:"Bahrain"},
+{source:"Pakistan", value:93973, target:"Bahrain"},
+{source:"Philippines", value:53307, target:"Bahrain"},
+{source:"Cambodia", value:26460, target:"Bangladesh"},
+{source:"India", value:46385, target:"Bangladesh"},
+{source:"Indonesia", value:205947, target:"Bangladesh"},
+{source:"Lao People's Democratic Republic", value:118769, target:"Bangladesh"},
+{source:"Malaysia", value:274253, target:"Bangladesh"},
+{source:"Myanmar", value:1246705, target:"Bangladesh"},
+{source:"Nepal", value:52621, target:"Bangladesh"},
+{source:"Singapore", value:12909, target:"Bangladesh"},
+{source:"Viet Nam", value:37076, target:"Bangladesh"},
+{source:"Afghanistan", value:50906, target:"Belgium"},
+{source:"India", value:48810, target:"Bhutan"},
+{source:"Malaysia", value:56375, target:"Brunei Darussalam"},
+{source:"Thailand", value:34957, target:"Cambodia"},
+{source:"Viet Nam", value:41357, target:"Cambodia"},
+{source:"Afghanistan", value:70392, target:"Canada"},
+{source:"Afghanistan", value:54204, target:"Canada"},
+{source:"Bangladesh", value:79033, target:"Canada"},
+{source:"Cambodia", value:22917, target:"Canada"},
+{source:"India", value:1015630, target:"Canada"},
+{source:"Lao People's Democratic Republic", value:13292, target:"Canada"},
+{source:"Malaysia", value:24975, target:"Canada"},
+{source:"Myanmar", value:10379, target:"Canada"},
+{source:"Nepal", value:29554, target:"Canada"},
+{source:"Pakistan", value:266682, target:"Canada"},
+{source:"Philippines", value:835779, target:"Canada"},
+{source:"Singapore", value:12878, target:"Canada"},
+{source:"Sri Lanka", value:140870, target:"Canada"},
+{source:"Viet Nam", value:179690, target:"Canada"},
+{source:"Lao People's Democratic Republic", value:9927, target:"China"},
+{source:"Myanmar", value:367052, target:"China"},
+{source:"Singapore", value:9088, target:"China"},
+{source:"Viet Nam", value:88254, target:"China"},
+{source:"Afghanistan", value:89849, target:"France"},
+{source:"Cambodia", value:57402, target:"France"},
+{source:"India", value:66688, target:"France"},
+{source:"Lao People's Democratic Republic", value:36591, target:"France"},
+{source:"Pakistan", value:36278, target:"France"},
+{source:"Sri Lanka", value:56880, target:"France"},
+{source:"Viet Nam", value:116008, target:"France"},
+{source:"Afghanistan", value:358767, target:"Germany"},
+{source:"India", value:267343, target:"Germany"},
+{source:"Viet Nam", value:140939, target:"Germany"},
+{source:"Afghanistan", value:48116, target:"Greece"},
+{source:"Indonesia", value:145244, target:"Hong Kong (SAR)"},
+{source:"Malaysia", value:16481, target:"Hong Kong (SAR)"},
+{source:"Philippines", value:127244, target:"Hong Kong (SAR)"},
+{source:"Singapore", value:10660, target:"Hong Kong (SAR)"},
+{source:"Bangladesh", value:2293959, target:"India"},
+{source:"Brunei Darussalam", value:21878, target:"India"},
+{source:"Maldives", value:574, target:"India"},
+{source:"Myanmar", value:132598, target:"India"},
+{source:"Nepal", value:663518, target:"India"},
+{source:"Pakistan", value:768138, target:"India"},
+{source:"Sri Lanka", value:253869, target:"India"},
+{source:"Malaysia", value:161013, target:"Indonesia"},
+{source:"Timor-Leste", value:95603, target:"Indonesia"},
+{source:"Afghanistan", value:3752317, target:"Iran (Islamic Republic of)"},
+{source:"India", value:70228, target:"Ireland"},
+{source:"Bangladesh", value:179289, target:"Italy"},
+{source:"India", value:186967, target:"Italy"},
+{source:"Pakistan", value:158436, target:"Italy"},
+{source:"Philippines", value:147183, target:"Italy"},
+{source:"Sri Lanka", value:95118, target:"Italy"},
+{source:"Bangladesh", value:28989, target:"Japan"},
+{source:"Cambodia", value:24912, target:"Japan"},
+{source:"India", value:49313, target:"Japan"},
+{source:"Indonesia", value:157343, target:"Japan"},
+{source:"Myanmar", value:92214, target:"Japan"},
+{source:"Nepal", value:185644, target:"Japan"},
+{source:"Philippines", value:319772, target:"Japan"},
+{source:"Sri Lanka", value:49037, target:"Japan"},
+{source:"Thailand", value:61263, target:"Japan"},
+{source:"Viet Nam", value:589874, target:"Japan"},
+{source:"Bangladesh", value:26252, target:"Jordan"},
+{source:"Bangladesh", value:406077, target:"Kuwait"},
+{source:"India", value:1231094, target:"Kuwait"},
+{source:"Indonesia", value:115347, target:"Kuwait"},
+{source:"Nepal", value:26292, target:"Kuwait"},
+{source:"Pakistan", value:362255, target:"Kuwait"},
+{source:"Philippines", value:210397, target:"Kuwait"},
+{source:"Sri Lanka", value:42384, target:"Kuwait"},
+{source:"Bangladesh", value:30406, target:"Lebanon"},
+{source:"Bangladesh", value:282437, target:"Malaysia"},
+{source:"Brunei Darussalam", value:16887, target:"Malaysia"},
+{source:"India", value:139751, target:"Malaysia"},
+{source:"Indonesia", value:1761502, target:"Malaysia"},
+{source:"Myanmar", value:308095, target:"Malaysia"},
+{source:"Nepal", value:502596, target:"Malaysia"},
+{source:"Pakistan", value:79288, target:"Malaysia"},
+{source:"Philippines", value:255520, target:"Malaysia"},
+{source:"Singapore", value:79926, target:"Malaysia"},
+{source:"Thailand", value:70718, target:"Malaysia"},
+{source:"Bangladesh", value:43282, target:"Maldives"},
+{source:"Bhutan", value:26552, target:"Nepal"},
+{source:"India", value:412190, target:"Nepal"},
+{source:"Afghanistan", value:42853, target:"Netherlands (Kingdom of the)"},
+{source:"India", value:149677, target:"Netherlands (Kingdom of the)"},
+{source:"India", value:76806, target:"Netherlands (Kingdom of the)"},
+{source:"Indonesia", value:100339, target:"Netherlands (Kingdom of the)"},
+{source:"Malaysia", value:23224, target:"Netherlands (Kingdom of the)"},
+{source:"Philippines", value:107622, target:"Netherlands (Kingdom of the)"},
+{source:"Sri Lanka", value:20823, target:"Netherlands (Kingdom of the)"},
+{source:"Thailand", value:24801, target:"Norway"},
+{source:"Bangladesh", value:737087, target:"Oman"},
+{source:"India", value:803105, target:"Oman"},
+{source:"Nepal", value:18147, target:"Oman"},
+{source:"Pakistan", value:280339, target:"Oman"},
+{source:"Philippines", value:61483, target:"Oman"},
+{source:"Sri Lanka", value:30611, target:"Oman"},
+{source:"Afghanistan", value:1923453, target:"Pakistan"},
+{source:"India", value:1597134, target:"Pakistan"},
+{source:"Bangladesh", value:274697, target:"Qatar"},
+{source:"India", value:736955, target:"Qatar"},
+{source:"Indonesia", value:46021, target:"Qatar"},
+{source:"Nepal", value:266580, target:"Qatar"},
+{source:"Pakistan", value:247227, target:"Qatar"},
+{source:"Philippines", value:178516, target:"Qatar"},
+{source:"Sri Lanka", value:161747, target:"Qatar"},
+{source:"Cambodia", value:33452, target:"Republic of Korea"},
+{source:"Indonesia", value:27807, target:"Republic of Korea"},
+{source:"Myanmar", value:25739, target:"Republic of Korea"},
+{source:"Nepal", value:43743, target:"Republic of Korea"},
+{source:"Sri Lanka", value:16851, target:"Republic of Korea"},
+{source:"Thailand", value:199861, target:"Republic of Korea"},
+{source:"Viet Nam", value:260609, target:"Republic of Korea"},
+{source:"Afghanistan", value:153258, target:"Saudi Arabia"},
+{source:"Bangladesh", value:2362680, target:"Saudi Arabia"},
+{source:"India", value:1953496, target:"Saudi Arabia"},
+{source:"Indonesia", value:169846, target:"Saudi Arabia"},
+{source:"Myanmar", value:163252, target:"Saudi Arabia"},
+{source:"Nepal", value:297561, target:"Saudi Arabia"},
+{source:"Pakistan", value:1937044, target:"Saudi Arabia"},
+{source:"Philippines", value:755432, target:"Saudi Arabia"},
+{source:"Sri Lanka", value:83297, target:"Saudi Arabia"},
+{source:"India", value:377038, target:"Singapore"},
+{source:"Indonesia", value:180437, target:"Singapore"},
+{source:"Malaysia", value:1553249, target:"Singapore"},
+{source:"India", value:66624, target:"Spain"},
+{source:"Pakistan", value:126260, target:"Spain"},
+{source:"Philippines", value:57473, target:"Spain"},
+{source:"Maldives", value:1424, target:"Sri Lanka"},
+{source:"Afghanistan", value:79353, target:"Sweden"},
+{source:"India", value:62598, target:"Sweden"},
+{source:"Pakistan", value:31536, target:"Sweden"},
+{source:"Thailand", value:47636, target:"Sweden"},
+{source:"Afghanistan", value:24005, target:"Switzerland"},
+{source:"Sri Lanka", value:37483, target:"Switzerland"},
+{source:"Indonesia", value:292830, target:"Taiwan"},
+{source:"Malaysia", value:24506, target:"Taiwan"},
+{source:"Philippines", value:151810, target:"Taiwan"},
+{source:"Thailand", value:80032, target:"Taiwan"},
+{source:"Viet Nam", value:263078, target:"Taiwan"},
+{source:"Cambodia", value:375635, target:"Thailand"},
+{source:"India", value:56847, target:"Thailand"},
+{source:"Lao People's Democratic Republic", value:285819, target:"Thailand"},
+{source:"Myanmar", value:1708695, target:"Thailand"},
+{source:"Afghanistan", value:332053, target:"Türkiye"},
+{source:"Bangladesh", value:1024949, target:"United Arab Emirates"},
+{source:"India", value:3248545, target:"United Arab Emirates"},
+{source:"Indonesia", value:298351, target:"United Arab Emirates"},
+{source:"Nepal", value:26097, target:"United Arab Emirates"},
+{source:"Pakistan", value:932356, target:"United Arab Emirates"},
+{source:"Philippines", value:528527, target:"United Arab Emirates"},
+{source:"Sri Lanka", value:112759, target:"United Arab Emirates"},
+{source:"Afghanistan", value:99398, target:"United Kingdom of Great Britain and Northern Ireland"},
+{source:"Bangladesh", value:298666, target:"United Kingdom of Great Britain and Northern Ireland"},
+{source:"India", value:1044779, target:"United Kingdom of Great Britain and Northern Ireland"},
+{source:"Malaysia", value:66932, target:"United Kingdom of Great Britain and Northern Ireland"},
+{source:"Pakistan", value:703309, target:"United Kingdom of Great Britain and Northern Ireland"},
+{source:"Philippines", value:176515, target:"United Kingdom of Great Britain and Northern Ireland"},
+{source:"Singapore", value:45936, target:"United Kingdom of Great Britain and Northern Ireland"},
+{source:"Sri Lanka", value:160178, target:"United Kingdom of Great Britain and Northern Ireland"},
+{source:"Afghanistan", value:199252, target:"United States of America"},
+{source:"Bangladesh", value:357581, target:"United States of America"},
+{source:"Cambodia", value:171380, target:"United States of America"},
+{source:"India", value:3165238, target:"United States of America"},
+{source:"Lao People's Democratic Republic", value:176588, target:"United States of America"},
+{source:"Myanmar", value:199585, target:"United States of America"},
+{source:"Nepal", value:264317, target:"United States of America"},
+{source:"Pakistan", value:452748, target:"United States of America"},
+{source:"Philippines", value:2263697, target:"United States of America"},
+{source:"Thailand", value:307741, target:"United States of America"},
+{source:"Viet Nam", value:1434631, target:"United States of America"}
+];
+
+// -------------------- ORIGIN COLORS --------------------
+const originColors = new Map([
+  ["India", "#519334"],
+  ["Bangladesh", "#f78e1e"],
+  ["Afghanistan", "#0076c0"],
+  ["Pakistan", "#ffd331"],
+  ["Philippines", "#b95380"],
+  ["Myanmar", "#dd5b40"],
+  ["Indonesia", "#a99783"],
+  ["Viet Nam", "#643589"],
+  ["Nepal", "#16b5c5"],
+  ["Malaysia", "#a7d16f"],
+  ["Sri Lanka", "#c17015"],
+  ["Thailand", "#002a53"],
+  ["Cambodia", "#fdcd9d"],
+  ["Lao People's Democratic Republic", "#8a8c8e"],
+  ["Singapore", "#bad5f0"],
+  ["Timor-Leste", "#bba9c7"],
+  ["Bhutan", "#004e54"],
+  ["Brunei Darussalam", "#004e54"],
+  ["Maldives", "#004e54"]
+]);
+
+// -------------------- SVG DIMENSIONS --------------------
+const margin = {top: 100, right: 350, bottom: 10, left: 350}, // extra top padding for headings
+      width = 1600 - margin.left - margin.right,
+      height = 1600 - margin.top - margin.bottom;
+
+const svg = d3.select("#chart")
+  .append("svg")
+  .attr("width", width + margin.left + margin.right)
+  .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+  .attr("transform", `translate(${margin.left},${margin.top})`);
+
+// -------------------- NODES --------------------
+const sources = Array.from(new Set(data.map(d => d.source)))
+    .map(name => ({name: name + "_s", original: name}));
+const targets = Array.from(new Set(data.map(d => d.target)))
+    .map(name => ({name: name + "_t", original: name}));
+
+const totalValue = name => d3.sum(data.filter(d => d.source === name || d.target === name), d=>d.value);
+
+sources.sort((a,b)=>totalValue(b.original) - totalValue(a.original));
+targets.sort((a,b)=>totalValue(b.original) - totalValue(a.original));
+
+const nodes = sources.concat(targets);
+const nodeIndex = new Map(nodes.map((d,i)=>[d.name,i]));
+
+// -------------------- LINKS --------------------
+const links = data.map(d=>({
+  source: nodeIndex.get(d.source + "_s"),
+  target: nodeIndex.get(d.target + "_t"),
+  value: d.value,
+  sourceName: d.source,
+  targetName: d.target
+}));
+
+
+// -------------------- SANKEY LAYOUT --------------------
+const nodeWidth = 10; // fixed width
+const sankey = d3.sankey()
+  .nodeWidth(nodeWidth)
+  .nodePadding(25)
+  .nodeSort((a, b) => b.value - a.value)
+  .linkSort((a, b) => b.value - a.value)
+  .extent([[0,0],[width,height]]);
+
+const graph = sankey({nodes:nodes.map(d=>Object.assign({},d)), links:links.map(d=>Object.assign({},d))});
+
+// -------------------- TOOLTIP --------------------
+const tooltip = d3.select("body").append("div")
+  .attr("class","tooltip")
+  .style("opacity",0);
+
+// -------------------- DRAW LINKS --------------------
+const link = svg.append("g")
+  .selectAll("path")
+  .data(graph.links)
+  .join("path")
+  .attr("class","link")
+  .attr("d", d3.sankeyLinkHorizontal())
+  .attr("stroke", d=>originColors.get(d.sourceName))
+  .attr("stroke-width", d=>Math.max(1,d.width))
+  .on("mouseover", (event,d)=>{
+    link.style("stroke-opacity", l=>l===d ? 0.8 : 0.1);
+    tooltip.transition().duration(200).style("opacity",.9);
+    tooltip.html(`${d.sourceName} → ${d.targetName}<br>Value: ${d.value.toLocaleString()}`)
+      .style("left",(event.pageX+10)+"px")
+      .style("top",(event.pageY-20)+"px");
+  })
+  .on("mouseout", ()=>{
+    link.style("stroke-opacity", 0.3);
+    tooltip.transition().duration(500).style("opacity",0);
+  });
+
+// -------------------- DRAW NODES --------------------
+const node = svg.append("g")
+  .selectAll("g")
+  .data(graph.nodes)
+  .join("g")
+  .attr("class","node")
+  .attr("transform", d=>`translate(${d.x0},${d.y0})`);
+
+node.append("rect")
+  .attr("height", d=>d.y1-d.y0)
+  .attr("width", nodeWidth)
+  .attr("fill", d => d.name.endsWith("_s") ? originColors.get(d.original) : "#3b3b3c");
+
+// -------------------- WRAP TEXT WITH VERTICAL CENTER --------------------
+function wrapTextVerticalCentered(selection, width) {
+  selection.each(function(d) {
+    const text = d3.select(this);
+    const words = d.original.split(/\s+/);
+    let line = [], lines = [], lineHeight = 11;
+
+    words.forEach(word=>{
+      line.push(word);
+      const tspanTest = document.createElementNS("http://www.w3.org/2000/svg","tspan");
+      tspanTest.textContent = line.join(" ");
+      document.body.appendChild(tspanTest);
+      const length = tspanTest.getComputedTextLength ? tspanTest.getComputedTextLength() : 0;
+      document.body.removeChild(tspanTest);
+      if(length > width) {
+        line.pop();
+        lines.push(line.join(" "));
+        line = [word];
+      }
+    });
+    if(line.length) lines.push(line.join(" "));
+    lines.push(`${d.value.toLocaleString()}`);
+
+    const totalHeight = lines.length * lineHeight;
+    let yStart = (d.y1 - d.y0)/2 - (totalHeight/2) + 0.5*lineHeight;
+
+    text.text(null);
+    lines.forEach((lineText,i)=>{
+      const tspan = text.append("tspan")
+        .attr("y", yStart + i*lineHeight)
+        .attr("dy", 0)
+        .attr("font-weight", i < lines.length-1 ? "bold" : null)
+        .attr("font-style", i === lines.length-1 ? "italic" : null)
+        .text(lineText);
+
+      if(d.name.endsWith("_s")) {
+        tspan.attr("x", -6).attr("text-anchor", "end"); 
+      } else {
+        tspan.attr("x", nodeWidth + 6).attr("text-anchor", "start"); 
+      }
+    });
+  });
+}
+
+node.append("text").call(wrapTextVerticalCentered, 180); 
+
+// -------------------- HEADINGS --------------------
+svg.append("text")
+  .attr("class","title")
+  .attr("x", -200) // align with right edge of left node labels
+  .attr("y", -margin.top + 40)
+  .attr("text-anchor", "start")
+  .text("Number of migrants in South and Southeast Asia: countries of origin and countries of destination");
+    
+svg.append("text")
+  .attr("class","heading")
+  .attr("x", -60) // align with right edge of left node labels
+  .attr("y", -margin.top + 80)
+  .attr("text-anchor", "end")
+  .text("ORIGIN COUNTRIES");
+
+svg.append("text")
+  .attr("class","heading")
+  .attr("x", width + nodeWidth + 70) // align with left edge of right node labels
+  .attr("y", -margin.top + 80)
+  .attr("text-anchor", "start")
+  .text("DESTINATION COUNTRIES");
+</script>
+</body>
+</html>
