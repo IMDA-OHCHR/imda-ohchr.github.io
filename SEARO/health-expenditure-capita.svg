@@ -1,0 +1,422 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 1200 700" role="img" aria-label="Government Per Capita Health Expenditure ($)">
+  <style>
+    text{font-family:'Roboto Condensed',Roboto,Arial,Helvetica,sans-serif; font-size:12px; fill:#a7a9ac;}
+    #maintitle{font-size:18px; fill:#3b3b3c; font-family:Roboto,Arial,Helvetica,sans-serif;}
+    .axis{stroke:#c7c8ca; stroke-width:1;}
+    .grid{stroke:#ededee; stroke-width:0.5;}
+    .country-line{fill:none; stroke-width:1.5; opacity:0.9; transition:opacity 120ms, stroke-width 120ms;}
+    .country-line.dim{opacity:0.12;}
+    .country-line.highlight{stroke-width:3; opacity:1; }
+    .point{fill-opacity:0.0; pointer-events:visible; } /* make small hover target without visible clutter */
+    .point.visible{fill-opacity:1; r:3.2; }
+    .legend-text{font-size:11px; font-style:italic; fill:#6d6e71;}
+    .tooltip-rect{fill:#fff; stroke:#333; stroke-width:0.8; rx:4; ry:4; opacity:0.95;}
+    .tooltip-text{font-size:16px; font-weight:700; fill:#3b3b3c; font-family:Roboto,Arial,Helvetica,sans-serif;}
+    .value-text{font-size:14px; fill:#6d6e71;}
+    #yaxis-label{font-weight:700; fill:#3b3b3c;}
+  </style>
+
+  <!-- Title -->
+  <text x="80" y="26" font-weight="700" id="maintitle">Government Per Capita Health Expenditure ($) — 2018–2021</text>
+  <text x="80" y="46" style="font-style:italic;">hover a line to highlight and see values</text>
+  <!-- Plot area -->
+  <!-- margins -->
+  <!-- left margin 80, top 60, right 720 reserved for legend, bottom margin 90 -->
+  <g id="plot" transform="translate(0,0)">
+    <!-- background grid and axes -->
+    <!-- We'll build the axes/labels in JS to match scale precisely, but draw base lines here -->
+    <line x1="80" y1="620" x2="700" y2="620" class="axis"/>
+    <line x1="80" y1="80" x2="80" y2="620" class="axis"/>
+  </g>
+
+  <!-- Legend area (on right) -->
+  <g id="legend" transform="translate(1120,60)"></g>
+
+  <!-- Tooltip group (hidden by default) -->
+  <g id="tooltip" visibility="hidden">
+    <rect id="tt-rect" x="0" y="0" width="120" height="44" class="tooltip-rect"></rect>
+    <text id="tt-name" x="8" y="18" class="tooltip-text">Country</text>
+    <text id="tt-value" x="8" y="36" class="value-text">Year: val%</text>
+  </g>
+
+  <script type="text/javascript"><![CDATA[
+    (function(){
+
+      // Data: country => array of 11 values for 2018..2021 (use null where missing)
+      const data = {
+  "Afghanistan": [6.95, 6.34, 10.15, 4.16],
+  "Bangladesh": [9.38, 9.43, 9.14, 11.91],
+  "Cambodia": [25.7, 30.67, 31.53, 43.53],
+  "India": [18.77, 20.36, 22.38, 25.47],
+  "Indonesia": [40.2, 41.76, 61.73, 85.5],
+  "Lao PDR": [26.63, 37.21, 17.84, 16.45],
+  "Malaysia": [210.07, 219.45, 216.67, 268.11],
+  "Maldives": [627.73, 679.96, 669.86, 871.61],
+  "Myanmar": [10.13, 8.72, 11.04, 12.27],
+  "Nepal": [12.75, 13.68, 18.27, 26.01],
+  "Pakistan": [14.4, 12.93, 13.76, 14.4],
+  "Philippines": [41.33, 49.2, 66.63, 77.59],
+  "Singapore": [1135.01, 1252.24, 1816.97, 2368.7],
+  "Sri Lanka": [73.38, 75.89, 77.54, 81.08],
+  "Thailand": [179.76, 189.32, 196.68, 225.09],
+  "Timor-Leste": [68.93, 66.57, 111.98, 118.97],
+  "Viet Nam": [39.72, 39.34, 36.27, 49.99],
+  "South Asia": [17.92, 18.97, 20.7, 23.38],
+  "South-East Asia": [70.79, 75.23, 91.13, 114.29]
+};
+
+      // config & scales
+      const svg = document.documentElement;
+      const plotLeft = 80, plotTop = 60, plotRight = 1100, plotBottom = 620;
+      const width = plotRight - plotLeft;
+      const height = plotBottom - plotTop;
+      const years = [2018,2019,2020,2021];
+      const x0 = plotLeft;
+      const dx = width / (years.length - 1); // distance between year ticks
+      // fixed value scale chosen to accommodate extremes (Maldives -32.9 to 37.5)
+      const vMax = 2400, vMin = 0;
+      const vSpan = vMax - vMin;
+      const yFor = v => {
+        if (v === null || v === undefined || isNaN(v)) return null;
+        // map vMax -> plotTop, vMin -> plotBottom
+        return plotTop + (vMax - v) / vSpan * height;
+      };
+
+      // color palette (distinct colors)
+      const colors = ["#b95380","#0076c0","#a78db6","#a99783","#cf7e9e","#f78e1e","#d3ae06","#16b5c5","#bad5f0","#bddc94","#fcbc7c","#b6221e","#643589","#008690","#831251","#ffd331","#e3d1c2","#808080","#A0A0A0"];
+      const countryNames = Object.keys(data);
+
+      // build axes and grid lines
+      const plot = document.getElementById('plot');
+
+      // horizontal grid lines for 0..2400 step 200
+      for (let v = 0; v <= 2400; v += 200) {
+        const y = yFor(v);
+        const line = document.createElementNS(svg.namespaceURI, 'line');
+        line.setAttribute('x1', plotLeft);
+        line.setAttribute('x2', plotRight);
+        line.setAttribute('y1', y);
+        line.setAttribute('y2', y);
+        line.setAttribute('class','grid');
+        plot.appendChild(line);
+
+        const label = document.createElementNS(svg.namespaceURI, 'text');
+        label.setAttribute('x', plotLeft - 8);
+        label.setAttribute('y', y + 4);
+        label.setAttribute('text-anchor','end');
+        label.textContent = v;
+        plot.appendChild(label);
+      }
+
+      // x axis ticks & year labels
+      for (let i=0;i<years.length;i++){
+        const x = x0 + i*dx;
+        const tick = document.createElementNS(svg.namespaceURI, 'line');
+        tick.setAttribute('x1', x);
+        tick.setAttribute('x2', x);
+        tick.setAttribute('y1', plotBottom);
+        tick.setAttribute('y2', plotBottom + 6);
+        tick.setAttribute('class','axis');
+        plot.appendChild(tick);
+
+        const label = document.createElementNS(svg.namespaceURI, 'text');
+        label.setAttribute('x', x);
+        label.setAttribute('y', plotBottom + 20);
+        label.setAttribute('text-anchor','middle');
+        label.textContent = years[i];
+        plot.appendChild(label);
+      }
+
+      // y axis label
+      const yLabel = document.createElementNS(svg.namespaceURI, 'text');
+      yLabel.setAttribute('x', plotLeft - 80);
+      yLabel.setAttribute('y', plotTop + 16);
+      yLabel.setAttribute('transform', `rotate(-90 ${plotLeft-50} ${plotTop+6})`);
+      yLabel.setAttribute('text-anchor','middle');
+      yLabel.setAttribute('id','yaxis-label');  
+      yLabel.textContent = 'Health Expenditure ($)';
+      plot.appendChild(yLabel);
+
+      // group to hold lines & points
+      const linesGroup = document.createElementNS(svg.namespaceURI, 'g');
+      linesGroup.setAttribute('id','linesGroup');
+      plot.appendChild(linesGroup);
+
+      // draw each country's path and points
+      countryNames.forEach((country, idx) => {
+        const vals = data[country];
+        const color = colors[idx % colors.length];
+
+        // build path d, skipping nulls (create gaps)
+        let d = '';
+        let segStarted = false;
+        for (let i=0;i<vals.length;i++){
+          const v = vals[i];
+          const x = x0 + i*dx;
+          const y = yFor(v);
+          if (y === null){
+            segStarted = false;
+            continue;
+          }
+          if (!segStarted){
+            d += `M ${x.toFixed(2)} ${y.toFixed(2)} `;
+            segStarted = true;
+          } else {
+            d += `L ${x.toFixed(2)} ${y.toFixed(2)} `;
+          }
+        }
+
+        // path element
+        const p = document.createElementNS(svg.namespaceURI, 'path');
+        p.setAttribute('d', d);
+        p.setAttribute('stroke', color);
+        p.setAttribute('class', 'country-line');
+        p.setAttribute('data-country', country);
+        p.setAttribute('opacity', '0.9');
+        linesGroup.appendChild(p);
+
+        // attach points (invisible small circles, used for hover detection and markers)
+        const ptsGroup = document.createElementNS(svg.namespaceURI, 'g');
+        ptsGroup.setAttribute('data-country', country);
+        for (let i=0;i<vals.length;i++){
+          const v = vals[i];
+          if (v === null || v === undefined || isNaN(v)) continue;
+          const x = x0 + i*dx;
+          const y = yFor(v);
+          const c = document.createElementNS(svg.namespaceURI, 'circle');
+          c.setAttribute('cx', x);
+          c.setAttribute('cy', y);
+          c.setAttribute('r', 6); // larger invisible hit area
+          c.setAttribute('fill', color);
+          c.setAttribute('class', 'point');
+          c.setAttribute('data-year-index', i);
+          c.setAttribute('data-year', years[i]);
+          c.setAttribute('data-value', v);
+          ptsGroup.appendChild(c);
+        }
+        linesGroup.appendChild(ptsGroup);
+      });
+
+      // build legend
+      const legend = document.getElementById('legend');
+      let ly = 0;
+      countryNames.forEach((country, idx) => {
+        const color = colors[idx % colors.length];
+        const rect = document.createElementNS(svg.namespaceURI, 'rect');
+        rect.setAttribute('x', 0);
+        rect.setAttribute('y', ly);
+        rect.setAttribute('width', 14);
+        rect.setAttribute('height', 12);
+        rect.setAttribute('fill', color);
+        legend.appendChild(rect);
+
+        const lab = document.createElementNS(svg.namespaceURI, 'text');
+        lab.setAttribute('x', 20);
+        lab.setAttribute('y', ly + 10);
+        lab.setAttribute('class','legend-text');
+        lab.textContent = country;
+        legend.appendChild(lab);
+
+        ly += 18;
+      });
+
+      // tooltip elements
+      const tt = document.getElementById('tooltip');
+      const ttRect = document.getElementById('tt-rect');
+      const ttName = document.getElementById('tt-name');
+      const ttValue = document.getElementById('tt-value');
+
+      // create marker circle that will show on the highlighted path
+      const marker = document.createElementNS(svg.namespaceURI, 'circle');
+      marker.setAttribute('r', 4.5);
+      marker.setAttribute('fill', '#fff');
+      marker.setAttribute('stroke', '#000');
+      marker.setAttribute('stroke-width', 1);
+      marker.setAttribute('visibility','hidden');
+      plot.appendChild(marker);
+
+      // helper: dim all lines except one
+      function setHighlight(country) {
+        const allPaths = linesGroup.querySelectorAll('.country-line');
+        allPaths.forEach(p=>{
+          if (p.getAttribute('data-country') === country){
+            p.classList.add('highlight');
+            p.classList.remove('dim');
+            p.setAttribute('opacity','1');
+            // bring to front
+            linesGroup.appendChild(p);
+          } else {
+            p.classList.add('dim');
+            p.classList.remove('highlight');
+          }
+        });
+      }
+      function clearHighlight(){
+        const allPaths = linesGroup.querySelectorAll('.country-line');
+        allPaths.forEach(p=>{
+          p.classList.remove('dim');
+          p.classList.remove('highlight');
+          p.setAttribute('opacity','0.9');
+        });
+        marker.setAttribute('visibility','hidden');
+      }
+
+      // attach interaction handlers
+      // we'll add listeners to each path for hover, and also to its points-group for mousemove detection
+      const pathElems = linesGroup.querySelectorAll('.country-line');
+      pathElems.forEach(p => {
+        const country = p.getAttribute('data-country');
+
+        // mouseover - highlight
+        p.addEventListener('mouseover', (ev) => {
+          setHighlight(country);
+          tt.setAttribute('visibility','visible');
+        });
+
+        // mouseout - clear
+        p.addEventListener('mouseout', (ev) => {
+          clearHighlight();
+          tt.setAttribute('visibility','hidden');
+        });
+
+        // mousemove - compute nearest year index from mouse x and display tooltip and marker
+        p.addEventListener('mousemove', (ev) => {
+          // get mouse position relative to svg
+          const pt = svg.createSVGPoint();
+          pt.x = ev.clientX; pt.y = ev.clientY;
+          const ctm = svg.getScreenCTM().inverse();
+          const loc = pt.matrixTransform(ctm);
+          const mouseX = loc.x;
+          // compute nearest year index
+          let rawIdx = Math.round((mouseX - x0) / dx);
+          rawIdx = Math.max(0, Math.min(rawIdx, years.length - 1));
+          const vals = data[country];
+          // find nearest non-null index by searching outward if selected is null
+          let idxFound = rawIdx;
+          if (vals[idxFound] === null || vals[idxFound] === undefined || isNaN(vals[idxFound])){
+            // search left/right
+            let left = idxFound-1, right = idxFound+1;
+            while (left >=0 || right < vals.length){
+              if (left>=0 && vals[left] !== null && !isNaN(vals[left])) { idxFound = left; break; }
+              if (right<vals.length && vals[right] !== null && !isNaN(vals[right])) { idxFound = right; break; }
+              left--; right++;
+            }
+          }
+          const value = vals[idxFound];
+          const x = x0 + idxFound*dx;
+          const y = yFor(value);
+
+          // place marker
+          marker.setAttribute('cx', x);
+          marker.setAttribute('cy', y);
+          marker.setAttribute('visibility','visible');
+
+          // tooltip content
+          const displayYear = years[idxFound];
+          ttName.textContent = country;
+          ttValue.textContent = `${displayYear}: $${value}`;
+
+          // position tooltip near mouse but inside svg bounds
+          const tooltipWidth = 140, tooltipHeight = 44;
+          let ttX = x + 12;
+          let ttY = y - tooltipHeight/2;
+          // avoid going off right edge (plotRight is 700, legend starts at 720, but tooltip can go into legend area)
+          if (ttX + tooltipWidth > 1150) ttX = x - tooltipWidth - 12;
+          if (ttY < 30) ttY = 30;
+          if (ttY + tooltipHeight > 660) ttY = 660 - tooltipHeight;
+
+          tt.setAttribute('transform', `translate(${ttX}, ${ttY})`);
+          ttRect.setAttribute('width', tooltipWidth);
+          ttRect.setAttribute('height', tooltipHeight);
+        });
+      });
+
+      // also make legend items interactive: hover legend to highlight line
+      const legendRects = document.getElementById('legend').querySelectorAll('rect');
+      legendRects.forEach((r, i) => {
+        r.style.cursor = 'pointer';
+        r.addEventListener('mouseover', ()=> {
+          setHighlight(countryNames[i]);
+          tt.setAttribute('visibility','visible');
+        });
+        r.addEventListener('mouseout', ()=> {
+          clearHighlight();
+          tt.setAttribute('visibility','hidden');
+        });
+        // also allow clicking legend entry to pin highlight (toggle)
+        let pinned = false;
+        r.addEventListener('click', ()=> {
+          pinned = !pinned;
+          if (pinned) {
+            setHighlight(countryNames[i]);
+          } else {
+            clearHighlight();
+          }
+        });
+      });
+
+      // initial instruction text near bottom with automatic wrapping
+        function wrapText(svg, x, y, text, maxWidth, lineHeight = 14) {
+          // create a temporary text element to measure
+          const tempText = document.createElementNS(svg.namespaceURI, 'text');
+          tempText.setAttribute('x', -9999); // offscreen
+          tempText.setAttribute('y', -9999);
+          tempText.setAttribute('font-size', '11');
+          tempText.setAttribute('font-style', 'italic');
+          tempText.textContent = text;
+          svg.appendChild(tempText);
+
+          const words = text.split(' ');
+          let line = '';
+          let firstLine = true;
+
+          const textElem = document.createElementNS(svg.namespaceURI, 'text');
+          textElem.setAttribute('x', x);
+          textElem.setAttribute('y', y);
+          textElem.setAttribute('font-size', '11');
+          textElem.setAttribute('font-style', 'italic');
+
+          words.forEach((word) => {
+            const testLine = line ? line + ' ' + word : word;
+            tempText.textContent = testLine;
+            const length = tempText.getComputedTextLength();
+            if (length > maxWidth && line) {
+              const tspan = document.createElementNS(svg.namespaceURI, 'tspan');
+              tspan.setAttribute('x', x);
+              tspan.setAttribute('dy', firstLine ? 0 : lineHeight);
+              tspan.textContent = line;
+              textElem.appendChild(tspan);
+              line = word;
+              firstLine = false;
+            } else {
+              line = testLine;
+            }
+          });
+
+          // append last line
+          const tspan = document.createElementNS(svg.namespaceURI, 'tspan');
+          tspan.setAttribute('x', x);
+          tspan.setAttribute('dy', firstLine ? 0 : lineHeight);
+          tspan.textContent = line;
+          textElem.appendChild(tspan);
+
+          // remove temporary text
+          svg.removeChild(tempText);
+
+          // append final wrapped text
+          plot.appendChild(textElem);
+        }
+
+        // use the function
+        wrapText(
+          svg,
+          plotLeft,
+          plotBottom + 50,
+          'Source: Calculated using health expenditure data available at WHO, Global Health Expenditure Database (for all countries except Brunei) and Brunei Darussalam Statistical Yearbook-2023 and Population data at World Bank Data. Data for Malaysia is from the Government of Malaysia.',
+          1000
+        );
+
+
+    })();
+  ]]></script>
+</svg>
