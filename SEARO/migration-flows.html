@@ -363,7 +363,7 @@ const link = svg.append("g")
   .on("mouseover", (event,d)=>{
     link.style("stroke-opacity", l=>l===d ? 0.8 : 0.1);
     tooltip.transition().duration(200).style("opacity",.9);
-    tooltip.html(`${d.sourceName} → ${d.targetName}<br>Value: ${d.value.toLocaleString()}`)
+    tooltip.html(`${d.sourceName} → ${d.targetName}<br>Migrants: ${d.value.toLocaleString()}`)
       .style("left",(event.pageX+10)+"px")
       .style("top",(event.pageY-20)+"px");
   })
