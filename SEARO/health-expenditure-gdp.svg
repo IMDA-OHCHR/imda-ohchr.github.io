@@ -14,6 +14,7 @@
     .tooltip-text{font-size:16px; font-weight:700; fill:#3b3b3c; font-family:Roboto,Arial,Helvetica,sans-serif;}
     .value-text{font-size:14px; fill:#6d6e71;}
     #yaxis-label{font-weight:700; fill:#3b3b3c;}
+      .highlight-rect{fill:#fafff3;}
   </style>
 
   <!-- Title -->
@@ -25,8 +26,10 @@
   <g id="plot" transform="translate(0,0)">
     <!-- background grid and axes -->
     <!-- We'll build the axes/labels in JS to match scale precisely, but draw base lines here -->
-    <line x1="80" y1="620" x2="700" y2="620" class="axis"/>
-    <line x1="80" y1="80" x2="80" y2="620" class="axis"/>
+    <rect x="80" y="60" width="1020" height="280" class="highlight-rect"></rect>
+    <line x1="80" y1="620" x2="1100" y2="620" class="axis"/>
+    <line x1="80" y1="60" x2="80" y2="620" class="axis"/>
+    
   </g>
 
   <!-- Legend area (on right) -->
