@@ -21,7 +21,7 @@
   <!-- Plot area -->
   <g id="plot" transform="translate(0,0)">
     <line x1="80" y1="620" x2="1100" y2="620" class="axis"/>
-    <line x1="80" y1="80" x2="80" y2="620" class="axis"/>
+    <line x1="80" y1="60" x2="80" y2="620" class="axis"/>
   </g>
 
   <!-- Legend area -->
